@@ -1,0 +1,121 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="style.css">
+    <title>Edit Employee</title>
+</head>
+
+<body>
+    <h2>Edit Employees</h2>
+    <div>
+        Employee ID:
+        <br>
+        <input type="number" id="empID">
+        <br>
+        <br>
+        <button onclick="getData(); handleButtonClick()">Get Data</button>
+    </div>
+
+    <div>
+        First Name: <input type="text" id="fname">
+        <br>
+        Last Name: <input type="text" id="lname">
+        <br>
+        Start Work Year: <input type="number" id="startWorkYear">
+        <br>
+        Depertment ID: <input type="number" id="depID">
+        <br>
+        <button onclick="editEmployee()">Update Employee</button>
+    </div>
+    
+    <div id="logout">
+        <p id="userFullName"></p>
+        <p id="clickCounter"></p>
+        <a href="./Login.html"><button>LogOut</button></a>
+    </div>
+    <script>
+        let username = sessionStorage.getItem('username');
+        let password = sessionStorage.getItem('password');
+        let clickCounter = sessionStorage.getItem('clickCounter') || 0;
+       
+        function handleButtonClick() {
+            let userClickCounter = parseInt(sessionStorage.getItem('clickCounter')) || 0;
+            userClickCounter++;
+
+            document.getElementById('clickCounter').innerText = 'Click Counter: ' + userClickCounter;
+
+
+            if (userClickCounter === 10) {
+                userClickCounter = 0;
+                sessionStorage.setItem('clickCounter', userClickCounter);
+                alert('You have reached 10 actions. The click counter has been reset.');
+                window.location.href = './Login.html';
+            } else {
+                sessionStorage.setItem('clickCounter', userClickCounter);
+            }
+        }
+
+        const url = "https://localhost:44342/api/employee/";
+
+        async function getData() {
+            const id = document.getElementById("empID").value;
+
+            let resp = await fetch(`${url}${id}`);
+            let data = await resp.json();
+
+            document.getElementById("fname").value = data.First_Name;
+            document.getElementById("lname").value = data.Last_Name;
+            document.getElementById("startWorkYear").value = data.Start_Work_Year;
+            document.getElementById("depID").value = data.DeparmentID;
+        }
+
+        async function editEmployee() {
+            const id = document.getElementById("empID").value;
+            const fname = document.getElementById("fname").value;
+            const lname = document.getElementById("lname").value;
+            const startWorkYear = document.getElementById("startWorkYear").value;
+            const depID = document.getElementById("depID").value;
+
+            const obj = {
+                First_Name: fname,
+                Last_Name: lname,
+                Start_Work_Year: startWorkYear,
+                DeparmentID: depID
+            };
+
+            let resp = await fetch(`${url}${id}`, {
+                method: 'PUT', 
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(obj),
+            });
+
+            if (resp.ok) {
+                alert('Department updated successfully!');
+                window.location.href = './Employee.html'
+            } else {
+                alert('Failed to update department.');
+            }
+        }
+
+        fetch('https://localhost:44342/api/User/')
+            .then(response => response.json())
+            .then(data => {
+                let user = data.find(u => u.User_Name === username && u.Password === password);
+
+                if (user) {
+                    document.getElementById('userFullName').innerText = user.Full_Name;
+                    document.getElementById('clickCounter').innerText = 'Click Counter: ' + clickCounter;
+                } else {
+                    console.error('User information not found.');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+
+    </script>
+</body>
+
+</html>

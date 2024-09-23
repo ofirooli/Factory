@@ -1,0 +1,171 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body onload="getDepartments()">
+    <div>
+        <h2>Departments</h2>
+        <table border="1" id="tbl">
+            <th>ID</th>
+            <th>Name</th>
+            <th>Manager</th>
+            <th>Edit</th>
+            <th>Delete</th>
+        </table>
+    </div>
+
+    <div id="logout">
+        <p id="userFullName"></p>
+        <p id="clickCounter"></p>
+        <a href="./NewDep.html" id="newDep"><button onclick="handleButtonClick()">New Department</button></a>
+        <a href="./Login.html"><button>LogOut</button></a>
+    </div>
+
+    <script>
+        let username = sessionStorage.getItem('username');
+        let password = sessionStorage.getItem('password');
+        let clickCounter = sessionStorage.getItem('clickCounter') || 0;
+
+        async function getDepartments() {
+            let resp = await fetch("https://localhost:44342/api/Department/")
+            let data = await resp.json()
+
+            const table = document.getElementById("tbl")
+
+            data.forEach(department => {
+                const tr = document.createElement("tr")
+                const tdId = document.createElement("td")
+                const tdName = document.createElement("td")
+                const tdManager = document.createElement("td")
+                const tdEdit = document.createElement("td")
+                const tdDelete = document.createElement("td")
+
+                tdId.innerText = department.ID
+                tdName.innerText = department.Name
+                tdManager.innerText = department.Manager
+
+                const editButton = document.createElement("button")
+                editButton.innerText = "Edit"
+                editButton.addEventListener("click", () => {
+                    editDepartment(department.ID);
+                    handleButtonClick();
+                });
+
+                const deleteButton = document.createElement("button")
+                deleteButton.innerText = "Delete"
+                deleteButton.addEventListener("click", () => {
+                    deleteDepartment(department.ID);
+                    handleButtonClick();
+                });
+
+                tdEdit.appendChild(editButton)
+                tdDelete.appendChild(deleteButton)
+
+                tr.appendChild(tdId)
+                tr.appendChild(tdName)
+                tr.appendChild(tdManager)
+                tr.appendChild(tdEdit)
+                tr.appendChild(tdDelete)
+
+                table.appendChild(tr)
+            });
+        }
+
+        function handleNewDepartment(newDepartment) {
+            const table = document.getElementById("tbl");
+            const tr = document.createElement("tr");
+            const tdId = document.createElement("td");
+            const tdName = document.createElement("td");
+            const tdManager = document.createElement("td");
+            const tdEdit = document.createElement("td");
+            const tdDelete = document.createElement("td");
+
+            tdId.innerText = newDepartment.ID;
+            tdName.innerText = newDepartment.Name;
+            tdManager.innerText = newDepartment.Manager;
+
+            const editButton = document.createElement("button");
+            editButton.innerText = "Edit";
+            editButton.addEventListener("click", () => {
+                editDepartment(newDepartment.ID);
+                handleButtonClick();
+            });
+
+            const deleteButton = document.createElement("button");
+            deleteButton.innerText = "Delete";
+            deleteButton.addEventListener("click", () => {
+                deleteDepartment(newDepartment.ID);
+                handleButtonClick();
+            });
+
+            tdEdit.appendChild(editButton);
+            tdDelete.appendChild(deleteButton);
+
+            tr.appendChild(tdId);
+            tr.appendChild(tdName);
+            tr.appendChild(tdManager);
+            tr.appendChild(tdEdit);
+            tr.appendChild(tdDelete);
+
+            table.appendChild(tr);
+        }
+
+        const queryParams = new URLSearchParams(window.location.search);
+        const newDepartment = {
+            ID: queryParams.get("ID"),
+            Name: queryParams.get("Name"),
+            Manager: queryParams.get("Manager")
+        };
+
+        if (newDepartment.ID && newDepartment.Name && newDepartment.Manager) {
+            handleNewDepartment(newDepartment);
+        }
+
+        function editDepartment(id) {
+            window.location.href = "EditDep.html?id=" + id;
+        }
+
+        function deleteDepartment(id) {
+            window.location.href = "DeleteDep.html?id=" + id;
+        }
+
+        document.getElementById('newDep').addEventListener('click', handleButtonClick);
+
+        function handleButtonClick() {
+            let userClickCounter = parseInt(sessionStorage.getItem('clickCounter')) || 0;
+            userClickCounter++;
+
+            document.getElementById('clickCounter').innerText = 'Click Counter: ' + userClickCounter;
+
+            if (userClickCounter === 10) {
+                userClickCounter = 0;
+                sessionStorage.setItem('clickCounter', userClickCounter);
+
+                window.location.href = './login.html';
+            } else {
+                sessionStorage.setItem('clickCounter', userClickCounter);
+            }
+        }
+
+        fetch('https://localhost:44342/api/User/')
+            .then(response => response.json())
+            .then(data => {
+                let user = data.find(u => u.User_Name === username && u.Password === password);
+
+                if (user) {
+                    document.getElementById('userFullName').innerText = user.Full_Name;
+                    document.getElementById('clickCounter').innerText = 'Click Counter: ' + clickCounter;
+                } else {
+                    console.error('User information not found.');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    </script>
+
+</body>
+
+</html>

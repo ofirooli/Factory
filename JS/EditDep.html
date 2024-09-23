@@ -1,0 +1,108 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="style.css">
+    <title>Edit Department</title>
+</head>
+
+<body>
+    <h2>Edit Departments</h2>
+    <div>
+        Department ID:
+        <br>
+        <input type="number" id="departmentID">
+        <br>
+        <br>
+        <button onclick="getData(); handleButtonClick()">Get Data</button>
+    </div>
+
+    <div>
+        Name: <input type="text" id="name">
+        <br>
+        Manager: <input type="text" id="manager">
+        <br>
+        <button onclick="editDepartment()">Update Department</button>
+    </div>
+    <div id="logout">
+        <p id="userFullName"></p>
+        <p id="clickCounter"></p>
+        <a href="./Login.html"><button>LogOut</button></a>
+    </div>
+    <script>
+        let username = sessionStorage.getItem('username');
+        let password = sessionStorage.getItem('password');
+        let clickCounter = sessionStorage.getItem('clickCounter') || 0;
+        
+        function handleButtonClick() {
+            let userClickCounter = parseInt(sessionStorage.getItem('clickCounter')) || 0;
+            userClickCounter++;
+
+            document.getElementById('clickCounter').innerText = 'Click Counter: ' + userClickCounter;
+
+            if (userClickCounter === 10) {
+                userClickCounter = 0;
+                sessionStorage.setItem('clickCounter', userClickCounter);
+
+                window.location.href = './login.html';
+            } else {
+                sessionStorage.setItem('clickCounter', userClickCounter);
+            }
+        }
+
+        const url = "https://localhost:44342/api/Department/";
+
+        async function getData() {
+            const id = document.getElementById("departmentID").value;
+
+            let resp = await fetch(`${url}${id}`);
+            let data = await resp.json();
+
+            document.getElementById("name").value = data.Name;
+            document.getElementById("manager").value = data.Manager;
+        }
+
+        async function editDepartment() {
+            const id = document.getElementById("departmentID").value;
+            const name = document.getElementById("name").value;
+            const manager = document.getElementById("manager").value;
+
+            const obj = {
+                Name: name,
+                Manager: manager
+            };
+
+            let resp = await fetch(`${url}${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(obj),
+            });
+
+            if (resp.ok) {
+                alert('Department updated successfully!');
+            } else {
+                alert('Failed to update department.');
+            }
+        }
+
+        fetch('https://localhost:44342/api/User/')
+            .then(response => response.json())
+            .then(data => {
+                let user = data.find(u => u.User_Name === username && u.Password === password);
+
+                if (user) {
+                    document.getElementById('userFullName').innerText = user.Full_Name;
+                    document.getElementById('clickCounter').innerText = 'Click Counter: ' + clickCounter;
+                } else {
+                    console.error('User information not found.');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+
+    </script>
+</body>
+
+</html>

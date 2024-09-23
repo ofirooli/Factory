@@ -1,0 +1,179 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body onload="getEmployees()">
+    <div>
+        <h2>Employees</h2>
+        <table border="1" id="tbl">
+            <th>ID</th>
+            <th>First Name</th>
+            <th>Last name</th>
+            <th>Start Work Year</th>
+            <th>Deparment ID</th>
+            <th>Employee's Shifts</th>
+            <th>Edit</th>
+            <th>Delete</th>
+            <th>Add Shift</th>
+        </table>
+    </div>
+
+    <div>
+        <h2>Search Employees</h2>
+        <label for="searchInput">Search:</label>
+        <input type="text" id="searchInput" oninput="searchEmployees()">
+    </div>
+
+    <div id="logout">
+        <p id="userFullName"></p>
+        <p id="clickCounter"></p>
+        <a href="./Login.html"><button>LogOut</button></a>
+    </div>
+
+    <script>
+        let username = sessionStorage.getItem('username');
+        let password = sessionStorage.getItem('password');
+        let clickCounter = sessionStorage.getItem('clickCounter') || 0;
+
+        async function getEmployees() {
+            try {
+                let resp = await fetch("https://localhost:44342/api/Employee/");
+                let data = await resp.json();
+
+
+                const table = document.getElementById("tbl");
+
+                data.forEach(employee => {
+                    const tr = document.createElement("tr");
+                    const tdId = document.createElement("td");
+                    const tdFirstName = document.createElement("td");
+                    const tdLastName = document.createElement("td");
+                    const tdWorkYear = document.createElement("td");
+                    const tdDepID = document.createElement("td");
+                    const tdEmpShift = document.createElement("td");
+                    const tdEdit = document.createElement("td");
+                    const tdDelete = document.createElement("td");
+                    const tdAddShift = document.createElement("td");
+
+                    tdId.innerText = employee.ID;
+                    tdFirstName.innerText = employee.First_Name;
+                    tdLastName.innerText = employee.Last_Name;
+                    tdWorkYear.innerText = employee.Start_Work_Year;
+                    tdDepID.innerText = employee.DeparmentID;
+
+                    const editButton = document.createElement("button");
+                    editButton.innerText = "Edit";
+                    editButton.addEventListener("click", () => {
+                        editEmployee(employee.ID);
+                        handleButtonClick();
+                    });
+
+                    const deleteButton = document.createElement("button");
+                    deleteButton.innerText = "Delete";
+                    deleteButton.addEventListener("click", () => {
+                        deleteEmployee(employee.ID);
+                        handleButtonClick();
+                    });
+
+                    const addShiftLink = document.createElement("a");
+                    addShiftLink.innerText = "Add Shift";
+                    addShiftLink.href = "./AddShift.html";
+                    addShiftLink.addEventListener("click", () => {
+                        handleButtonClick();
+                    });
+
+                  
+
+                    tdEdit.appendChild(editButton);
+                    tdDelete.appendChild(deleteButton);
+                    tdAddShift.appendChild(addShiftLink);
+
+                    tr.appendChild(tdId);
+                    tr.appendChild(tdFirstName);
+                    tr.appendChild(tdLastName);
+                    tr.appendChild(tdWorkYear);
+                    tr.appendChild(tdDepID);
+                    tr.appendChild(tdEmpShift); 
+                    tr.appendChild(tdEdit);
+                    tr.appendChild(tdDelete);
+                    tr.appendChild(tdAddShift);
+
+                    table.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        function editEmployee(id) {
+            window.location.href = "EditEmp.html?id=" + id;
+        }
+
+        function deleteEmployee(id) {
+            window.location.href = "DeleteEmp.html?id=" + id;
+        }
+
+         function searchEmployees() {
+            const searchInput = document.getElementById("searchInput").value.toLowerCase();
+
+            const table = document.getElementById("tbl");
+            const rows = table.getElementsByTagName("tr");
+
+            for (let i = 1; i < rows.length; i++) { // Start from index 1 to skip the table header row
+                const cells = rows[i].getElementsByTagName("td");
+                const employeeId = cells[0].innerText.toLowerCase();
+                const firstName = cells[1].innerText.toLowerCase();
+                const lastName = cells[2].innerText.toLowerCase();
+                const department = cells[4].innerText.toLowerCase();
+
+                const match =
+                    employeeId.includes(searchInput) ||
+                    firstName.includes(searchInput) ||
+                    lastName.includes(searchInput) ||
+                    department.includes(searchInput);
+
+                if (match) {
+                    rows[i].style.display = "";
+                } else {
+                    rows[i].style.display = "none";
+                }
+            }
+        }
+
+        function handleButtonClick() {
+            let userClickCounter = parseInt(sessionStorage.getItem('clickCounter')) || 0;
+            userClickCounter++;
+
+            document.getElementById('clickCounter').innerText = 'Click Counter: ' + userClickCounter;
+
+            if (userClickCounter === 10) {
+                userClickCounter = 0;
+                sessionStorage.setItem('clickCounter', userClickCounter);
+
+                window.location.href = './login.html';
+            } else {
+                sessionStorage.setItem('clickCounter', userClickCounter);
+            }
+        }
+
+        fetch('https://localhost:44342/api/User/')
+            .then(response => response.json())
+            .then(data => {
+                let user = data.find(u => u.User_Name === username && u.Password === password);
+
+                if (user) {
+                    document.getElementById('userFullName').innerText = user.Full_Name;
+                    document.getElementById('clickCounter').innerText = 'Click Counter: ' + clickCounter;
+                } else {
+                    console.error('User information not found.');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    </script>
+</body>
+
+</html>

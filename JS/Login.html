@@ -1,0 +1,51 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div>
+        <h2>Factory Login Page</h2>
+        <form id="loginForm">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <br>
+            <button type="button" onclick="getUser()">Login</button>
+            <p id="error-message"></p>
+        </form>
+    </div>
+
+    <script>
+        function getUser() {
+            let username = document.getElementById('username').value
+            let password = document.getElementById('password').value
+
+            fetch('https://localhost:44342/api/User/')
+                .then(response => response.json())
+                .then(data => {
+                    let user = data.find(u => u.User_Name === username && u.Password === password)
+
+                    if (user) {
+                        sessionStorage.setItem('username', username)
+                        sessionStorage.setItem('password', password)
+
+                        alert('Login successful');
+                        window.location.href = 'Homepage.html';
+
+                    } else {
+                        document.getElementById('error-message').innerText = 'Invalid username or password'
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error)
+                });
+        }
+    </script>
+    </script>
+
+</body>
+
+</html>

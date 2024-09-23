@@ -1,0 +1,155 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h2>Add Shift</h2>
+    <div>
+        Date: <input type="date" id="date">
+        <br>
+        Employee ID: <input type="number" id="employeeId">
+        <br>
+        Start Time:
+        <select id="startTime">
+            <option value="06:00">06:00 AM</option>
+            <option value="07:00">07:00 AM</option>
+            <option value="08:00">08:00 AM</option>
+            <option value="09:00">09:00 AM</option>
+            <option value="10:00">10:00 AM</option>
+            <option value="11:00">11:00 AM</option>
+            <option value="12:00">12:00 PM</option>
+            <option value="13:00">13:00 PM</option>
+            <option value="14:00">14:00 PM</option>
+            <option value="15:00">15:00 PM</option>
+            <option value="16:00">16:00 PM</option>
+            <option value="17:00">17:00 PM</option>
+            <option value="18:00">18:00 PM</option>
+            <option value="19:00">19:00 PM</option>
+            <option value="20:00">20:00 PM</option>
+            <option value="21:00">21:00 PM</option>
+            <option value="22:00">22:00 PM</option>
+            <option value="23:00">23:00 PM</option>
+            <option value="00:00">00:00 AM</option>
+
+        </select>
+        <br>
+        End Time:
+        <select id="endTime">
+            <option value="06:00">06:00 AM</option>
+            <option value="07:00">07:00 AM</option>
+            <option value="08:00">08:00 AM</option>
+            <option value="09:00">09:00 AM</option>
+            <option value="10:00">10:00 AM</option>
+            <option value="11:00">11:00 AM</option>
+            <option value="12:00">12:00 PM</option>
+            <option value="13:00">13:00 PM</option>
+            <option value="14:00">14:00 PM</option>
+            <option value="15:00">15:00 PM</option>
+            <option value="16:00">16:00 PM</option>
+            <option value="17:00">17:00 PM</option>
+            <option value="18:00">18:00 PM</option>
+            <option value="19:00">19:00 PM</option>
+            <option value="20:00">20:00 PM</option>
+            <option value="21:00">21:00 PM</option>
+            <option value="22:00">22:00 PM</option>
+            <option value="23:00">23:00 PM</option>
+            <option value="00:00">00:00 AM</option>
+        </select>
+        <br>
+        <a><button onclick="addShift(); handleButtonClick()">Add Shift</button></a>
+    </div>
+
+    <div id="logout">
+        <p id="userFullName"></p>
+        <p id="clickCounter"></p>
+        <a href="./Login.html"><button>LogOut</button></a>
+    </div>
+
+
+    <script>
+
+        let username = sessionStorage.getItem('username');
+        let password = sessionStorage.getItem('password');
+        let clickCounter = sessionStorage.getItem('clickCounter') || 0;
+
+        function handleButtonClick() {
+            let userClickCounter = parseInt(sessionStorage.getItem('clickCounter')) || 0;
+            userClickCounter++;
+
+            document.getElementById('clickCounter').innerText = 'Click Counter: ' + userClickCounter;
+
+            if (userClickCounter === 10) {
+                userClickCounter = 0;
+                sessionStorage.setItem('clickCounter', userClickCounter);
+
+                window.location.href = './login.html';
+            } else {
+                sessionStorage.setItem('clickCounter', userClickCounter);
+            }
+        }
+
+        async function getEmployeeById(employeeId) {
+            let resp = await fetch(`https://localhost:44342/api/Employee/${employeeId}`);
+            let employeeData = await resp.json();
+            return employeeData;
+        }
+
+
+        const url = "https://localhost:44342/api/Shift/";
+
+        async function addShift() {
+            const date = document.getElementById("date").value;
+            const employeeId = document.getElementById("employeeId").value;
+            const startTime = document.getElementById("startTime").value;
+            const endTime = document.getElementById("endTime").value;
+
+            const obj = {
+                Date: date,
+                EmployeeId: employeeId,
+                Start_Time: startTime,
+                End_Time: endTime
+            };
+
+            let resp = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(obj),
+            });
+
+            if (resp.ok) {
+                alert('Shift added successfully!');
+                window.location.href = './Shift.html';
+            } else {
+                alert('Failed to add shift.');
+            }
+        }
+
+        fetch('https://localhost:44342/api/User/')
+            .then(response => response.json())
+            .then(data => {
+                let user = data.find(u => u.User_Name === username && u.Password === password);
+
+                if (user) {
+                    document.getElementById('userFullName').innerText = user.Full_Name;
+                    document.getElementById('clickCounter').innerText = 'Click Counter: ' + clickCounter;
+                } else {
+                    console.error('User information not found.');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+
+
+        function formatDate(date) {
+            const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+            return date.toLocaleDateString(undefined, options);
+        }
+    </script>
+</body>
+
+</html>

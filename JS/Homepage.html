@@ -1,0 +1,71 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div>
+        <h2>Welcome to the Home Page</h2>
+
+        <nav>
+            <button id="employeeButton" onclick="andleButtonClick()"><a href="./Employee.html">Employees</a></button>
+            <button id="departmentButton" onclick="andleButtonClick()"> <a
+                    href="./Department.html">Departments</a></button>
+            <button id="shiftButton" onclick="andleButtonClick()"> <a href="./Shift.html">Shifts</a></button>
+        </nav>
+    </div>
+
+    <div id="logout">
+        <p id="userFullName"></p>
+        <p id="clickCounter"></p>
+        <a href="./Login.html"><button>LogOut</button></a>
+    </div>
+
+</body>
+
+<script>
+
+    let username = sessionStorage.getItem('username')
+    let password = sessionStorage.getItem('password')
+    let clickCounter = sessionStorage.getItem('clickCounter') || 0;
+
+
+    document.getElementById('employeeButton').addEventListener('click', handleButtonClick);
+    document.getElementById('departmentButton').addEventListener('click', handleButtonClick);
+    document.getElementById('shiftButton').addEventListener('click', handleButtonClick);
+
+    fetch('https://localhost:44342/api/User/')
+        .then(response => response.json())
+        .then(data => {
+            let user = data.find(u => u.User_Name === username && u.Password === password);
+
+            if (user) {
+                document.getElementById('userFullName').innerText = user.Full_Name;
+                document.getElementById('clickCounter').innerText = 'Click Counter: ' + clickCounter;
+            } else {
+                console.error('User information not found.');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+        });
+
+    function handleButtonClick() {
+        let userClickCounter = parseInt(sessionStorage.getItem('clickCounter')) || 0;
+        userClickCounter++;
+
+        document.getElementById('clickCounter').innerText = 'Click Counter: ' + userClickCounter;
+
+        if (userClickCounter === 10) {
+            userClickCounter = 0;
+            sessionStorage.setItem('clickCounter', userClickCounter);
+
+            window.location.href = './login.html';
+        } else {
+            sessionStorage.setItem('clickCounter', userClickCounter);
+        }
+    }
+</script>
+
+</html>
